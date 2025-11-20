@@ -1,0 +1,14 @@
+/home/diego/DesignSoft/seucantinho/backend/src/main/java/com/seucantinho/dto/ReservaRequest.java
+/home/diego/DesignSoft/seucantinho/backend/src/main/java/com/seucantinho/dto/EspacoDTO.java
+/home/diego/DesignSoft/seucantinho/backend/src/main/java/com/seucantinho/config/SwaggerConfig.java
+/home/diego/DesignSoft/seucantinho/backend/src/main/java/com/seucantinho/exception/UsuarioNaoEncontradoException.java
+/home/diego/DesignSoft/seucantinho/backend/src/main/java/com/seucantinho/exception/ValidacaoException.java
+/home/diego/DesignSoft/seucantinho/backend/src/main/java/com/seucantinho/repository/public interface ReservaRepository exten.java
+/home/diego/DesignSoft/seucantinho/backend/src/main/java/com/seucantinho/SeuCantinhoApplication.java
+/home/diego/DesignSoft/seucantinho/backend/src/main/java/com/seucantinho/controller/ReservaController.java
+/home/diego/DesignSoft/seucantinho/backend/src/main/java/com/seucantinho/dto/UsuarioLoginDTO.java
+/home/diego/DesignSoft/seucantinho/backend/src/main/java/com/seucantinho/repository/ReservaRepository.java
+/home/diego/DesignSoft/seucantinho/backend/src/main/java/com/seucantinho/model/Usuario.java
+/home/diego/DesignSoft/seucantinho/backend/src/main/java/com/seucantinho/dto/PagamentoRequest.java
+/home/diego/DesignSoft/seucantinho/backend/src/main/java/com/seucantinho/exception/ReservaIndisponivelException.java
+/home/diego/DesignSoft/seucantinho/backend/src/main/java/com/seucantinho/exception/GlobalExceptionHandler.java
