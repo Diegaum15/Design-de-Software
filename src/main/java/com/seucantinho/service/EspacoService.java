@@ -57,25 +57,51 @@ public class EspacoService {
         return espacoRepository.findAll();
     }
 
-    /**
-     * Deleta logicamente um Espaço.
-     * Nota: Como não temos um campo 'status' na entidade Espaco, usaremos delete físico. 
-     * Em um sistema de produção, um campo 'status' (ativo/inativo) seria preferível.
-     * @param idEspaco O ID do espaço a ser deletado.
-     */
-    public void deletarEspaco(String idEspaco) {
-        // Validação: Verificar se há reservas futuras para este espaço antes de deletar
-        // List<Reserva> reservasFuturas = reservaRepository.findReservasFuturasByEspacoId(idEspaco);
-        // if (!reservasFuturas.isEmpty()) {
-        //    throw new ValidacaoException("Não é possível deletar o espaço pois existem reservas futuras associadas.");
-        // }
-        
-        espacoRepository.deleteById(idEspaco);
+
+    public Espaco atualizarEspaco(String id, Espaco dados) {
+
+        Espaco atual = buscarPorId(id);
+
+        // Atualizar campos comuns
+        atual.setNome(dados.getNome());
+        atual.setTipo(dados.getTipo());
+        atual.setCapacidade(dados.getCapacidade());
+        atual.setPreco(dados.getPreco());
+        atual.setFoto(dados.getFoto());
+        atual.setFilial(dados.getFilial());
+
+        // Atualizar campos específicos (subclasse)
+        if (atual instanceof Salao s && dados instanceof Salao d) {
+            s.setTamanhoCozinha(d.getTamanhoCozinha());
+            s.setQuantidadeCadeiras(d.getQuantidadeCadeiras());
+            s.setAreaTotal(d.getAreaTotal());
+        }
+
+        if (atual instanceof Chacara c && dados instanceof Chacara d) {
+            c.setTemPiscina(d.getTemPiscina());
+            c.setNumQuartos(d.getNumQuartos());
+            c.setAreaLazer(d.getAreaLazer());
+            c.setEstacionamentoCapacidade(d.getEstacionamentoCapacidade());
+        }
+
+        if (atual instanceof QuadraEsportiva q && dados instanceof QuadraEsportiva d) {
+            q.setTipoPiso(d.getTipoPiso());
+            q.setTipoEsportes(d.getTipoEsportes());
+        }
+
+        return espacoRepository.save(atual);
     }
 
-    // ------------------------------------------------------------------------
-    // Lógica Central: Disponibilidade
-    // ------------------------------------------------------------------------
+    public void deletarEspaco(String idEspaco) {
+
+        List<Reserva> futuras = reservaRepository.findReservasFuturasByEspacoId(idEspaco);
+
+        if (!futuras.isEmpty()) {
+            throw new ValidacaoException("Não é possível remover: existem reservas futuras para este espaço.");
+        }
+
+        espacoRepository.deleteById(idEspaco);
+    }
 
     /**
      * Verifica se um determinado espaço está disponível para um intervalo de tempo.

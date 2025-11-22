@@ -4,13 +4,15 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
 
 @Entity
 @Table(name = "TB_ESPACO")
 @Inheritance(strategy = InheritanceType.JOINED)
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
+@Data // Mantido para Getters/Setters
+@NoArgsConstructor // Construtor sem argumentos
+@AllArgsConstructor // Construtor com todos os argumentos
+@SuperBuilder // Adicionado para suportar herança de construtores
 public abstract class Espaco {
     
     @Id
@@ -31,43 +33,4 @@ public abstract class Espaco {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_filial", nullable = false)
     private Filial filial;
-}
-
-// Salao.java
-@Entity
-@Table(name = "TB_SALAO")
-@PrimaryKeyJoinColumn(name = "idEspaco")
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
-public class Salao extends Espaco {
-    private String tamanhoCozinha;
-    private int quantidadeCadeiras;
-    private float areaTotal;
-}
-
-// Chacara.java
-@Entity
-@Table(name = "TB_CHACARA")
-@PrimaryKeyJoinColumn(name = "idEspaco")
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
-public class Chacara extends Espaco {
-    private boolean temPiscina;
-    private int numQuartos;
-    private String areaLazer;
-    private int estacionamentoCapacidade;
-}
-
-// QuadraEsportiva.java
-@Entity
-@Table(name = "TB_QUADRA_ESPORTIVA")
-@PrimaryKeyJoinColumn(name = "idEspaco")
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
-public class QuadraEsportiva extends Espaco {
-    private String tipoPiso;
-    private String tipoEsportes;
 }

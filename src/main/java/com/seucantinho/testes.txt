@@ -1,0 +1,85 @@
+mvn clean package -DskipTests
+docker compose down
+docker compose up --build
+
+---
+
+### Passo 2: Executar os Testes
+
+Com o Docker rodando a versão mais recente, podemos executar os testes.
+
+#### Teste 1: CPF Duplicado (O CPF é o mesmo do João Silva: `123.456.789-00`)
+
+```bash
+curl -X POST http://localhost:8080/api/clientes \
+-H "Content-Type: application/json" \
+-d '{
+    "usuario": {
+        "nome": "Maria de Souza",
+        "email": "maria.souza@teste.com",
+        "senha": "senhaSegura123",
+        "telefone": "31999999999"
+    },
+    "cpf": "123.456.789-00",
+    "endereco": "Rua B, 10"
+}'
+
+**Espera-se:** `400 Bad Request` com a mensagem: `"O CPF 123.456.789-00 já está cadastrado no sistema."`
+
+---
+
+#### Teste 2: Busca por ID (Substitua o UUID pelo ID que você recebeu no primeiro sucesso)
+
+Use o ID **`8c7eb86a-09a5-4f58-a68b-7d991de8eca9`** (ou o que você recebeu na primeira resposta de sucesso).
+
+```bash
+# Substitua o UUID abaixo pelo ID do João da Silva
+curl -X GET http://localhost:8080/api/clientes/8c7eb86a-09a5-4f58-a68b-7d991de8eca9
+
+**Espera-se:** `200 OK` e o JSON do João da Silva.
+
+---
+
+#### Teste 3: Busca por ID (Não Encontrado)
+
+Use um ID que você sabe que não existe.
+
+```bash
+curl -X GET http://localhost:8080/api/clientes/99999999-9999-9999-9999-999999999999
+
+**Espera-se:** `404 Not Found` com a mensagem: `"Cliente com ID 99999999-9999-9999-9999-999999999999 não encontrado."`
+
+---
+
+#### Teste 4: Listagem de Clientes (Busca todos)
+
+```bash
+curl -X GET http://localhost:8080/api/clientes
+
+**Espera-se:** `200 OK` e uma lista JSON contendo apenas o João da Silva.
+
+---
+
+#### Teste 5: Validação de Formato (CPF Inválido)
+
+Tente registrar um segundo usuário de sucesso (com CPF e Email únicos, mas com CPF sem formatação).
+
+```bash
+curl -X POST http://localhost:8080/api/clientes \
+-H "Content-Type: application/json" \
+-d '{
+    "usuario": {
+        "nome": "Pedro",
+        "email": "pedro.teste@teste.com",
+        "senha": "senhaSegura123",
+        "telefone": "31988887777"
+    },
+    "cpf": "12345678900", 
+    "endereco": "Rua C, 50"
+}'
+
+**Espera-se:** `400 Bad Request` com a mensagem: `"CPF inválido. Utilize o formato 000.000.000-00. (Tamanho esperado: 14 caracteres)"`
+
+---
+
+Se todos esses testes passarem, você terá certeza que toda a lógica de persistência e leitura está robusta. O próximo passo lógico seria implementar a codificação de senha e a funcionalidade de login. Me diga como foram esses testes!

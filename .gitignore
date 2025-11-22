@@ -1,0 +1,21 @@
+Diretórios de build e arquivos temporários
+
+/target/
+.mvn/
+*.class
+
+Logs
+
+*.log
+
+Arquivos de IDE (IntelliJ, VSCode, Eclipse, etc.)
+
+.idea/
+.vscode/
+.settings/
+*.iml
+
+Arquivos gerados pelo sistema operacional
+
+.DS_Store
+Thumbs.db

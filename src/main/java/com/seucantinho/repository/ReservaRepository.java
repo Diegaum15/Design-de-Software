@@ -14,15 +14,14 @@ public interface ReservaRepository extends JpaRepository<Reserva, String> {
     // Método crucial para a lógica de negócio: Verificar se há reservas conflitantes.
     // Esta consulta verifica se já existe uma reserva confirmada para o mesmo espaço
     // que se sobrepõe ao período de interesse (dataInicio, dataFim).
-    @Query("SELECT r FROM Reserva r WHERE r.espaco = :espaco " +
-           "AND r.statusReserva = 'CONFIRMADA' " +
-           "AND (:dataFim > r.dataEvento AND :dataInicio < r.dataEvento)")
-    List<Reserva> findReservasConflitantes(
-        @Param("espaco") Espaco espaco,
-        @Param("dataInicio") LocalDateTime dataInicio,
-        @Param("dataFim") LocalDateTime dataFim
+    @Query("""
+        SELECT r FROM Reserva r
+        WHERE r.espaco.idEspaco = :idEspaco
+        AND r.dataEvento = :dataEvento
+        AND r.statusReserva = 'CONFIRMADA'
+    """)
+    List<Reserva> verificarConflitos(
+            @Param("idEspaco") String idEspaco,
+            @Param("dataEvento") LocalDateTime dataEvento
     );
-
-    // Método para listar todas as reservas de um cliente específico
-    List<Reserva> findByClienteIdUsuario(String idCliente);
 }

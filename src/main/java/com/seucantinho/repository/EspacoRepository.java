@@ -13,4 +13,6 @@ public interface EspacoRepository extends JpaRepository<Espaco, String> {
     
     // Lista todos os espaços em uma filial específica
     // List<Espaco> findByFilialIdFilial(String idFilial);
+    List<Espaco> findByTipoIgnoreCase(String tipo);
+
 }

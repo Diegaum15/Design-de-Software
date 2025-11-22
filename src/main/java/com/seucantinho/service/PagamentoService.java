@@ -4,7 +4,7 @@ import com.seucantinho.model.Pagamento;
 import com.seucantinho.model.Reserva;
 import com.seucantinho.repository.PagamentoRepository;
 import com.seucantinho.exception.ValidacaoException;
-import com.seucantinho.dto.PagamentoRequest; // Assumimos que o DTO PagamentoRequest existe
+import com.seucantinho.dto.PagamentoRequest; 
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -15,7 +15,8 @@ import java.time.LocalDateTime;
 public class PagamentoService {
 
     private final PagamentoRepository pagamentoRepository;
-    private final ReservaService reservaService;
+    // CRÍTICO: O serviço precisa interagir com o ReservaService para buscar e atualizar a Reserva.
+    private final ReservaService reservaService; 
 
     @Autowired
     public PagamentoService(
@@ -38,18 +39,23 @@ public class PagamentoService {
      * @return O Pagamento registrado.
      */
     public Pagamento processarPagamento(String idReserva, PagamentoRequest request) {
-        // 1. Buscar a Reserva associada
-        Reserva reserva = reservaService.buscarPorId(idReserva);
+        // 1. Buscar a Reserva associada (garante que a reserva exista)
+        Reserva reserva = reservaService.buscarPorId(idReserva); 
 
         // 2. Validação básica de status
         if (!reserva.getStatusReserva().equals("PENDENTE")) {
             throw new ValidacaoException("A reserva já foi processada ou está em status " + reserva.getStatusReserva());
         }
+        
+        // 3. Verifica se já existe um pagamento para esta reserva (Evita duplicidade)
+        if (pagamentoRepository.findByReservaIdReserva(idReserva) != null) {
+            throw new ValidacaoException("Já existe um pagamento registrado para esta reserva.");
+        }
 
-        // 3. Simulação da Transação (em um sistema real, chamaria o gateway)
+        // 4. Simulação da Transação
         boolean sucesso = simularGatewayPagamento(request.getNumeroCartao(), reserva.getValorPago()); 
 
-        // 4. Criação da Entidade Pagamento
+        // 5. Criação da Entidade Pagamento
         Pagamento pagamento = new Pagamento();
         pagamento.setReserva(reserva);
         pagamento.setValor(reserva.getValorPago());
@@ -58,14 +64,16 @@ public class PagamentoService {
         if (sucesso) {
             pagamento.setStatus("QUITADO");
             
-            // 5. Atualiza o status da Reserva para CONFIRMADA
-            reservaService.confirmarReserva(idReserva);
+            // 6. Atualiza o status da Reserva para CONFIRMADA
+            reservaService.confirmarReserva(idReserva); // Assumindo que este método existe no ReservaService
         } else {
             pagamento.setStatus("FALHOU");
-            throw new ValidacaoException("Falha ao processar o pagamento. Tente novamente ou use outro método.");
+            // Se falhou, salva o registro de falha (para auditoria) e lança exceção para o Controller
+            Pagamento pagamentoFalhou = pagamentoRepository.save(pagamento);
+            throw new ValidacaoException("Falha ao processar o pagamento. Transação " + pagamentoFalhou.getIdPagamento + " falhou.");
         }
 
-        // 6. Salvar o registro de Pagamento
+        // 7. Salvar o registro de Pagamento bem-sucedido
         return pagamentoRepository.save(pagamento);
     }
 
@@ -78,12 +86,11 @@ public class PagamentoService {
     private boolean simularGatewayPagamento(String numeroCartao, float valor) {
         // Lógica de simulação:
         // Assume que qualquer cartão que comece com '4' e não seja '4444' é válido.
-        if (numeroCartao != null && numeroCartao.startsWith("4") && !numeroCartao.equals("4444")) {
-            // Em um ambiente real, você faria aqui a chamada HTTP/SDK para Stripe, PagSeguro, etc.
-            System.out.println("Transação de R$" + valor + " APROVADA.");
+        if (numeroCartao != null && numeroCartao.startsWith("4") && !numeroCartao.equals("4444000000000000")) {
+            System.out.println("Simulação de Transação: R$" + valor + " APROVADA.");
             return true; 
         }
-        System.out.println("Transação REJEITADA.");
+        System.out.println("Simulação de Transação: R$" + valor + " REJEITADA.");
         return false;
     }
 
