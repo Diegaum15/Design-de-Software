@@ -9,11 +9,14 @@ import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/pagamentos")
-@Tag(name = "Pagamentos", description = "Gerenciamento e processamento de pagamentos de reservas.")
+@Tag(name = "Pagamentos", description = "Processamento e gestão de pagamentos de reservas.")
 public class PagamentoController {
 
     private final PagamentoService pagamentoService;
@@ -31,27 +34,14 @@ public class PagamentoController {
                description = "Recebe os dados de pagamento (simulados) para uma reserva PENDENTE. Se o processamento for bem-sucedido, a reserva é CONFIRMADA.")
     @PostMapping("/processar")
     public ResponseEntity<Pagamento> processarPagamento(@Valid @RequestBody PagamentoRequest request) {
+        Pagamento pagamento = pagamentoService.processarPagamento(request);
         
-        // O ID da reserva está dentro do PagamentoRequest.
-        String idReserva = request.getIdReserva();
+        // Se o status for "QUITADO", retorna 200 OK ou 201 Created
+        if (pagamento.getStatus().equals("QUITADO")) {
+            return new ResponseEntity<>(pagamento, HttpStatus.CREATED);
+        }
         
-        // O PagamentoService lida com a simulação do gateway, salva o registro
-        // de pagamento e chama o ReservaService para confirmar a reserva.
-        Pagamento pagamentoSalvo = pagamentoService.processarPagamento(idReserva, request);
-        
-        // Retorna 201 Created para indicar que a transação e a confirmação foram bem-sucedidas.
-        return new ResponseEntity<>(pagamentoSalvo, HttpStatus.CREATED);
-    }
-    
-    // ------------------------------------------------------------------------
-    // CONSULTA (Privado / Cliente & Admin)
-    // ------------------------------------------------------------------------
-
-    @Operation(summary = "Busca um Pagamento pelo ID",
-               description = "Retorna os detalhes de um registro de pagamento específico.")
-    @GetMapping("/{id}")
-    public ResponseEntity<Pagamento> buscarPorId(@PathVariable String id) {
-        Pagamento pagamento = pagamentoService.buscarPorId(id);
-        return ResponseEntity.ok(pagamento);
+        // Se falhou, retorna 400 Bad Request ou 402 Payment Required (depende da arquitetura)
+        return new ResponseEntity<>(pagamento, HttpStatus.BAD_REQUEST);
     }
 }

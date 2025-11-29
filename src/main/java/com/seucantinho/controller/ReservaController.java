@@ -3,6 +3,7 @@ package com.seucantinho.controller;
 import com.seucantinho.dto.ReservaRequest;
 import com.seucantinho.model.Reserva;
 import com.seucantinho.service.ReservaService;
+import com.seucantinho.dto.ReservaResponse;
 import com.seucantinho.model.Cliente;
 import com.seucantinho.model.Espaco;
 import io.swagger.v3.oas.annotations.Operation;
@@ -33,26 +34,34 @@ public class ReservaController {
 
     @Operation(summary = "Cria uma nova Reserva",
                description = "Inicia o processo de reserva. A reserva é criada com status PENDENTE e precisa de pagamento para ser CONFIRMADA.")
-    
     @PostMapping
-    public ResponseEntity<Reserva> criarReserva(@Valid @RequestBody ReservaRequest req) {
+    public ResponseEntity<Reserva> criarReserva(@Valid @RequestBody ReservaRequest request) {
+        
+        // 1. Mapeamento do DTO de Request para a Entidade Reserva
+        Reserva novaReserva = new Reserva();
+        
+        // Define o cliente (apenas o ID é necessário para o Service buscar)
+        Cliente cliente = new Cliente();
+        cliente.setIdUsuario(request.getIdCliente());
+        novaReserva.setCliente(cliente);
 
-        Reserva reserva = new Reserva();
+        // Define o espaço (apenas o ID é necessário para o Service buscar)
+        Espaco espaco = new Espaco() {}; // Instanciação da classe abstrata
+        espaco.setIdEspaco(request.getIdEspaco());
+        novaReserva.setEspaco(espaco);
 
-        Cliente cli = new Cliente();
-        cli.setIdUsuario(req.getIdCliente());
-        reserva.setCliente(cli);
+        // Define as datas e o valor
+        novaReserva.setDataEvento(request.getDataEventoInicio()); 
+        
+        // Se a lógica de verificação de conflito no Service depender da dataEventoFim, 
+        // você precisará ajustar o Reserva.java ou o service. Aqui, continuamos com o Valor
+        novaReserva.setValorPago(request.getValorTotal()); // Valor total da reserva
 
-        Espaco esp = new Espaco() {};
-        esp.setIdEspaco(req.getIdEspaco());
-        reserva.setEspaco(esp);
-
-        reserva.setDataInicioEvento(req.getDataInicio());
-        reserva.setValorPago(req.getValorTotal());
-
-        Reserva criada = reservaService.criarReserva(reserva);
-
-        return ResponseEntity.status(HttpStatus.CREATED).body(criada);
+        // 2. Chama o Service para validação de disponibilidade e salvamento
+        Reserva reservaSalva = reservaService.criarReserva(novaReserva);
+        
+        // Retorna a reserva criada (status PENDENTE)
+        return new ResponseEntity<>(reservaSalva, HttpStatus.CREATED);
     }
 
     // ------------------------------------------------------------------------
@@ -60,32 +69,28 @@ public class ReservaController {
     // ------------------------------------------------------------------------
 
     @Operation(summary = "Busca uma Reserva pelo ID",
-               description = "Retorna os detalhes de uma reserva específica.")
+           description = "Retorna os detalhes de uma reserva específica.")
     @GetMapping("/{id}")
-    public ResponseEntity<Reserva> buscarPorId(@PathVariable String id) {
-        Reserva reserva = reservaService.buscarPorId(id);
-        return ResponseEntity.ok(reserva);
+    public ResponseEntity<ReservaResponse> buscarPorId(@PathVariable String id) {
+        ReservaResponse response = reservaService.buscarPorIdDTO(id); // Chamada ajustada
+        return ResponseEntity.ok(response);
     }
 
     @Operation(summary = "Lista todas as Reservas de um Cliente",
-               description = "Retorna uma lista de reservas feitas por um cliente específico.")
+            description = "Retorna uma lista de reservas feitas por um cliente específico.")
     @GetMapping("/cliente/{idCliente}")
-    public ResponseEntity<List<Reserva>> listarReservasPorCliente(@PathVariable String idCliente) {
-        List<Reserva> reservas = reservaService.listarReservasPorCliente(idCliente);
+    public ResponseEntity<List<ReservaResponse>> listarReservasPorCliente(@PathVariable String idCliente) {
+        // Mude o tipo de retorno para usar o DTO
+        List<ReservaResponse> reservas = reservaService.listarReservasPorCliente(idCliente); 
         return ResponseEntity.ok(reservas);
     }
-    
+
     @Operation(summary = "Lista todas as Reservas do Sistema",
-               description = "Retorna todas as reservas, ideal para painel administrativo. (Acesso restrito a Administradores).")
+            description = "Retorna todas as reservas, ideal para painel administrativo.")
     @GetMapping
-    public ResponseEntity<List<Reserva>> listarTodas() {
-        // Nota: O ReservaService deve ser expandido para incluir listarTodos() se for necessário.
-        // Assumindo que este método exista:
-        // List<Reserva> reservas = reservaService.listarTodas();
-        // return ResponseEntity.ok(reservas);
-        
-        // Para fins deste exemplo, usaremos uma implementação temporária ou expandimos o service.
-        // Vamos supor que apenas as rotas de cliente/ID são necessárias por enquanto.
-        return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).build();
+    public ResponseEntity<List<ReservaResponse>> listarTodas() {
+        // Implementação
+        List<ReservaResponse> reservas = reservaService.listarTodas();
+        return ResponseEntity.ok(reservas);
     }
 }

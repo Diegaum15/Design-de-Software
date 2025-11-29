@@ -1,3 +1,4 @@
+
 package com.seucantinho.model;
 
 import jakarta.persistence.*;

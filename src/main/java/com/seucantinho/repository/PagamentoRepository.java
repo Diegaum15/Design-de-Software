@@ -2,12 +2,9 @@ package com.seucantinho.repository;
 
 import com.seucantinho.model.Pagamento;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
 
+@Repository
 public interface PagamentoRepository extends JpaRepository<Pagamento, String> {
-    
-    // Método para buscar um pagamento pela sua reserva associada
-    Pagamento findByReservaIdReserva(String idReserva);
-    
-    // Método para listar todos os pagamentos com um status específico (ex: 'QUITADO', 'FALHOU')
-    // List<Pagamento> findByStatus(String status);
+    // Métodos específicos de consulta, se necessários
 }

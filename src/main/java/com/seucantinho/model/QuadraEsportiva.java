@@ -1,6 +1,9 @@
 package com.seucantinho.model;
 
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.PrimaryKeyJoinColumn;
+import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -16,6 +19,11 @@ import lombok.experimental.SuperBuilder;
 @AllArgsConstructor
 @SuperBuilder
 public class QuadraEsportiva extends Espaco {
-    private String tipoPiso;
-    private String tipoEsportes;
+
+    // Campos específicos para Quadra Esportiva
+    @Column(nullable = false)
+    private String tipoPiso; // Ex: "Cimento", "Grama Sintética", "Madeira"
+
+    @Column(nullable = true)
+    private String tipoEsportes; // Ex: "Futebol, Vôlei"
 }

@@ -1,26 +1,33 @@
 package com.seucantinho.dto;
 
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.NotNull;
 import lombok.Data;
+import org.hibernate.validator.constraints.CreditCardNumber;
 
-/**
- * DTO para receber os dados necessários para processar um pagamento.
- * Simula os dados de um cartão de crédito.
- */
-@Data
+@Data // Gera Getters, Setters, ToString, EqualsAndHashCode
 public class PagamentoRequest {
 
-    @NotBlank(message = "O ID da reserva é obrigatório.")
+    // ID da reserva que este pagamento se destina
+    @NotBlank(message = "O ID da reserva a ser paga é obrigatório.")
     private String idReserva;
 
+    // Tipo de pagamento: CARTAO_CREDITO, PIX, BOLETO
+    @NotBlank(message = "O método de pagamento é obrigatório.")
+    private String metodoPagamento;
+
+    // Campo simulado para o número do cartão (para validação básica)
+    @CreditCardNumber(ignoreNonDigitCharacters = true, message = "Número de cartão inválido.")
     @NotBlank(message = "O número do cartão é obrigatório.")
-    // Usamos um Pattern simplificado para simulação (16 dígitos)
-    @Pattern(regexp = "^\\d{16}$", message = "Número do cartão deve ter 16 dígitos.")
     private String numeroCartao;
+    
+    @NotBlank(message = "O nome impresso no cartão é obrigatório.")
+    private String nomeTitular;
 
-    @NotBlank(message = "O nome no cartão é obrigatório.")
-    private String nomeNoCartao;
+    @NotNull(message = "O código CVV é obrigatório.")
+    private Integer cvv;
 
-    // Outros campos simulados para pagamento (Validade, CVV, etc.) poderiam ser adicionados aqui.
+    // Valor que o cliente está tentando pagar (para verificar se coincide com o valor da reserva)
+    @NotNull(message = "O valor do pagamento é obrigatório.")
+    private Float valorPagamento;
 }

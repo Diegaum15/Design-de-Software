@@ -45,9 +45,11 @@ public class UsuarioService {
      * @throws UsuarioNaoEncontradoException se o usuário não for encontrado.
      */
     public Usuario buscarPorEmail(String email) {
-        // CORREÇÃO: Usando findByEmail do Repository (que retorna Optional)
-        return usuarioRepository.findByEmail(email)
-                .orElseThrow(() -> new UsuarioNaoEncontradoException("Usuário com email " + email + " não encontrado."));
+        Usuario usuario = usuarioRepository.findByEmail(email);
+        if (usuario == null) {
+             throw new UsuarioNaoEncontradoException("Usuário com email " + email + " não encontrado.");
+        }
+        return usuario;
     }
 
     /**
@@ -56,10 +58,15 @@ public class UsuarioService {
      * @throws ValidacaoException se o email já estiver cadastrado.
      */
     public void verificarEmailUnico(String email) {
-        // CORREÇÃO: Usando existsByEmail do Repository (retorna boolean)
-        if (usuarioRepository.existsByEmail(email)) {
+        if (usuarioRepository.findByEmail(email) != null) {
             throw new ValidacaoException("O email " + email + " já está cadastrado no sistema.");
         }
+    }
+
+    // Usado em ClienteService.atualizarCliente
+    public boolean verificarEmailExistente(String email) {
+        // Implementação: Retorna true se o email já existir.
+        return usuarioRepository.findByEmail(email) != null;
     }
 
     /**

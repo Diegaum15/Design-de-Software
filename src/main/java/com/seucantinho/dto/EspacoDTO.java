@@ -52,3 +52,33 @@ public class EspacoDTO {
     private String tipoPiso;
     private String tipoEsportes;
 }
+
+/*
+// Conteúdo de EspacoDTO.java (exemplo)
+@Data // Se estiver usando Lombok
+public class EspacoDTO {
+    // Campos Comuns
+    private String idEspaco;
+    private String nome;
+    private String tipo; // MUITO IMPORTANTE!
+    private Integer capacidade;
+    private Float preco;
+    private String foto;
+    private String idFilial; // MUITO IMPORTANTE!
+
+    // Campos Específicos de Salao
+    private String tamanhoCozinha;
+    private Integer quantidadeCadeiras;
+    private Float areaTotal;
+
+    // Campos Específicos de Chacara
+    private Boolean temPiscina;
+    private Integer numQuartos;
+    private String areaLazer;
+    private Integer estacionamentoCapacidade;
+
+    // Campos Específicos de Quadra Esportiva
+    private String tipoPiso;
+    private String tipoEsportes;
+}
+*/

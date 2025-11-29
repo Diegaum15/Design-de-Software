@@ -1,9 +1,8 @@
 package com.seucantinho.controller;
 
 import com.seucantinho.dto.EspacoDTO;
-import com.seucantinho.exception.ValidacaoException;
-import com.seucantinho.model.*;
 import com.seucantinho.service.EspacoService;
+// Remova os imports desnecessários de Entidades (Espaco, Salao, etc.) e ValidacaoException
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -18,7 +17,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/espacos")
-@Tag(name = "Espaços", description = "Gerenciamento e consulta de espaços de aluguel.")
+@Tag(name = "Espaços", description = "Gerenciamento e consulta de Salões, Chácaras e Quadras Esportivas.")
 public class EspacoController {
 
     private final EspacoService espacoService;
@@ -29,47 +28,33 @@ public class EspacoController {
     }
 
     // ------------------------------------------------------------------------
-    // CREATE (POST)
+    // CRUD BÁSICO (Administrativo)
     // ------------------------------------------------------------------------
-    @Operation(summary = "Cria um novo espaço")
+
+    @Operation(summary = "Cria ou atualiza um espaço",
+               description = "Registra um novo espaço (Salão, Chácara ou Quadra Esportiva) ou atualiza um existente. Usa o EspacoDTO.")
     @PostMapping
-    public ResponseEntity<Espaco> criarEspaco(@Valid @RequestBody EspacoDTO dto) {
-
-        Espaco espaco = convertDtoToModel(dto);
-
-        Espaco novo = espacoService.salvarEspaco(espaco);
-        return ResponseEntity.status(HttpStatus.CREATED).body(novo);
+    // Altera a assinatura para receber e retornar EspacoDTO
+    public ResponseEntity<EspacoDTO> salvarEspaco(@Valid @RequestBody EspacoDTO espacoDTO) {
+        
+        // O Service cuida da conversão, validação e persistência
+        EspacoDTO novoEspaco = espacoService.salvarEspaco(espacoDTO);
+        
+        // Retorna 201 Created se o ID estava nulo, ou 200 OK se o ID já existia (atualização)
+        HttpStatus status = (espacoDTO.getIdEspaco() == null) ? HttpStatus.CREATED : HttpStatus.OK;
+        return new ResponseEntity<>(novoEspaco, status);
     }
-
-    // ------------------------------------------------------------------------
-    // READ (GET by ID)
-    // ------------------------------------------------------------------------
+    
     @Operation(summary = "Busca um espaço pelo ID")
     @GetMapping("/{id}")
-    public ResponseEntity<Espaco> buscarPorId(@PathVariable String id) {
-        return ResponseEntity.ok(espacoService.buscarPorId(id));
+    // Altera a assinatura para retornar EspacoDTO
+    public ResponseEntity<EspacoDTO> buscarPorId(@PathVariable String id) {
+        EspacoDTO espaco = espacoService.buscarPorId(id);
+        return ResponseEntity.ok(espaco);
     }
-
-    // ------------------------------------------------------------------------
-    // UPDATE (PUT)
-    // ------------------------------------------------------------------------
-    @Operation(summary = "Atualiza um espaço existente")
-    @PutMapping("/{id}")
-    public ResponseEntity<Espaco> atualizarEspaco(
-            @PathVariable String id,
-            @Valid @RequestBody EspacoDTO dto) {
-
-        Espaco espacoAtualizado = convertDtoToModel(dto);
-
-        Espaco atualizado = espacoService.atualizarEspaco(id, espacoAtualizado);
-
-        return ResponseEntity.ok(atualizado);
-    }
-
-    // ------------------------------------------------------------------------
-    // DELETE
-    // ------------------------------------------------------------------------
-    @Operation(summary = "Deleta um espaço (verifica reservas futuras)")
+    
+    @Operation(summary = "Deleta um espaço",
+               description = "Deleta permanentemente um espaço pelo ID. Deve verificar reservas pendentes.")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deletarEspaco(@PathVariable String id) {
         espacoService.deletarEspaco(id);
@@ -77,68 +62,34 @@ public class EspacoController {
     }
 
     // ------------------------------------------------------------------------
-    // LISTAGEM E DISPONIBILIDADE
+    // CONSULTA E DISPONIBILIDADE (Público)
     // ------------------------------------------------------------------------
-    @Operation(summary = "Lista espaços ou filtra por tipo e disponibilidade")
+    
+    @Operation(summary = "Lista todos os espaços ou filtra por tipo e disponibilidade")
     @GetMapping
-    public ResponseEntity<List<Espaco>> listarEspacos(
+    // Altera a assinatura para retornar List<EspacoDTO>
+    public ResponseEntity<List<EspacoDTO>> listarEspacos(
+            @Parameter(description = "Data e hora de início da reserva (formato ISO: YYYY-MM-DDTHH:MM:SS)")
             @RequestParam(required = false) LocalDateTime dataInicio,
+            
+            @Parameter(description = "Data e hora de fim da reserva (formato ISO: YYYY-MM-DDTHH:MM:SS)")
             @RequestParam(required = false) LocalDateTime dataFim,
-            @RequestParam(required = false) String tipo
-    ) {
+            
+            @Parameter(description = "Filtra por tipo de espaço (e.g., Salao, Chacara)")
+            @RequestParam(required = false) String tipo) {
+        
+        List<EspacoDTO> resultados;
+
+        // Se as datas de disponibilidade forem fornecidas, usamos a lógica de filtro.
         if (dataInicio != null && dataFim != null) {
-            return ResponseEntity.ok(espacoService.listarDisponiveis(dataInicio, dataFim, tipo));
+            resultados = espacoService.listarDisponiveis(dataInicio, dataFim, tipo);
+        } else {
+            // Se nenhuma data for fornecida, lista todos
+            resultados = espacoService.listarTodos();
         }
-
-        return ResponseEntity.ok(espacoService.listarTodos());
+        
+        return ResponseEntity.ok(resultados);
     }
 
-    // ------------------------------------------------------------------------
-    // Conversão DTO → Model (Suporta CREATE + UPDATE)
-    // ------------------------------------------------------------------------
-    private Espaco convertDtoToModel(EspacoDTO dto) {
-
-        Espaco espaco;
-
-        switch (dto.getTipo().toUpperCase()) {
-            case "SALAO":
-                espaco = new Salao();
-                ((Salao) espaco).setTamanhoCozinha(dto.getTamanhoCozinha());
-                ((Salao) espaco).setQuantidadeCadeiras(dto.getQuantidadeCadeiras());
-                ((Salao) espaco).setAreaTotal(dto.getAreaTotal());
-                break;
-
-            case "CHACARA":
-                espaco = new Chacara();
-                ((Chacara) espaco).setTemPiscina(dto.getTemPiscina());
-                ((Chacara) espaco).setNumQuartos(dto.getNumQuartos());
-                ((Chacara) espaco).setAreaLazer(dto.getAreaLazer());
-                ((Chacara) espaco).setEstacionamentoCapacidade(dto.getEstacionamentoCapacidade());
-                break;
-
-            case "QUADRAESPORTIVA":
-                espaco = new QuadraEsportiva();
-                ((QuadraEsportiva) espaco).setTipoPiso(dto.getTipoPiso());
-                ((QuadraEsportiva) espaco).setTipoEsportes(dto.getTipoEsportes());
-                break;
-
-            default:
-                throw new ValidacaoException("Tipo de espaço inválido: " + dto.getTipo());
-        }
-
-        // Campos comuns
-        espaco.setIdEspaco(dto.getIdEspaco());
-        espaco.setNome(dto.getNome());
-        espaco.setTipo(dto.getTipo());
-        espaco.setCapacidade(dto.getCapacidade());
-        espaco.setPreco(dto.getPreco());
-        espaco.setFoto(dto.getFoto());
-
-        // Relacionamento com Filial
-        Filial filial = new Filial();
-        filial.setIdFilial(dto.getIdFilial());
-        espaco.setFilial(filial);
-
-        return espaco;
-    }
+    // REMOVA O MÉTODO convertDtoToModel AQUI, POIS ELE FOI MOVIDO PARA O SERVICE
 }

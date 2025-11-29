@@ -3,10 +3,14 @@ package com.seucantinho.service;
 import com.seucantinho.model.Administrador;
 import com.seucantinho.model.Filial;
 import com.seucantinho.repository.AdministradorRepository;
+import com.seucantinho.exception.UsuarioNaoEncontradoException;
 import com.seucantinho.exception.ValidacaoException;
-import jakarta.persistence.EntityNotFoundException;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import jakarta.persistence.EntityNotFoundException;
 
 import java.util.List;
 
@@ -15,104 +19,66 @@ public class AdministradorService {
 
     private final AdministradorRepository administradorRepository;
     private final UsuarioService usuarioService;
-    private final FilialService filialService; // Necessário para gerenciar filiais associadas
-    // Futuro: private final PasswordEncoder passwordEncoder;
+    private final FilialService filialService;   // <-- AGORA EXISTE
 
     @Autowired
     public AdministradorService(
-        AdministradorRepository administradorRepository,
-        UsuarioService usuarioService,
-        FilialService filialService
+            AdministradorRepository administradorRepository,
+            UsuarioService usuarioService,
+            FilialService filialService   // <-- INJETADO AQUI
     ) {
         this.administradorRepository = administradorRepository;
         this.usuarioService = usuarioService;
-        this.filialService = filialService;
+        this.filialService = filialService;      // <-- ATRIBUÍDO
     }
 
-    // ------------------------------------------------------------------------
-    // MÉTODOS DE REGISTRO E BUSCA
-    // ------------------------------------------------------------------------
+    public Administrador buscarPorMatricula(String matricula) {
+        Administrador admin = administradorRepository.findByMatricula(matricula);
+        if (admin == null) {
+            throw new UsuarioNaoEncontradoException(
+                "Administrador com matrícula " + matricula + " não encontrado."
+            );
+        }
+        return admin;
+    }
 
-    /**
-     * Registra um novo Administrador.
-     * @param administrador O objeto Administrador a ser salvo.
-     * @return O Administrador registrado.
-     */
     public Administrador registrarAdministrador(Administrador administrador) {
-        // 1. Validação de Unicidade de Email (herdada do UsuarioService)
         usuarioService.verificarEmailUnico(administrador.getEmail());
-
-        // 2. (Futuro) Codificar a senha antes de salvar
-        // administrador.setSenha(passwordEncoder.encode(administrador.getSenha()));
-
+        // Validação futura: matrícula única
         return administradorRepository.save(administrador);
     }
 
-    /**
-     * Busca um Administrador pelo ID.
-     * @param idAdmin O ID do administrador.
-     * @return O Administrador encontrado.
-     * @throws EntityNotFoundException se o administrador não for encontrado.
-     */
-    public Administrador buscarPorId(String idAdmin) {
-        return administradorRepository.findById(idAdmin)
-                .orElseThrow(() -> new EntityNotFoundException("Administrador com ID " + idAdmin + " não encontrado."));
-    }
-
-    /**
-     * Lista todos os Administradores.
-     * @return Uma lista de Administradores.
-     */
     public List<Administrador> listarTodos() {
         return administradorRepository.findAll();
     }
 
-    // ------------------------------------------------------------------------
-    // MÉTODOS DE GESTÃO DE FILIAL
-    // ------------------------------------------------------------------------
+    public Administrador buscarPorId(String id) {
+        return administradorRepository.findById(id)
+                .orElseThrow(() ->
+                    new EntityNotFoundException("Administrador com ID " + id + " não encontrado."));
+    }
 
-    /**
-     * Adiciona uma Filial à lista de filiais gerenciadas por um Administrador.
-     * @param idAdmin ID do administrador.
-     * @param idFilial ID da filial a ser adicionada.
-     * @return O Administrador atualizado.
-     */
+    // ---------------------------------------------------
+    // FILIAIS GERENCIADAS
+    // ---------------------------------------------------
+
+    @Transactional
     public Administrador adicionarFilialGerenciada(String idAdmin, String idFilial) {
         Administrador admin = buscarPorId(idAdmin);
-        Filial filial = filialService.buscarPorId(idFilial); // Reutiliza a lógica de busca da Filial
-        
-        List<Filial> filiais = admin.getFiliaisGerenciadas();
-        
-        // Verifica se a filial já está na lista
-        boolean filialJaExiste = filiais.stream()
-                                        .anyMatch(f -> f.getIdFilial().equals(idFilial));
-        
-        if (filialJaExiste) {
-            throw new ValidacaoException("O administrador já gerencia a filial com ID " + idFilial);
-        }
-        
-        filiais.add(filial);
-        admin.setFiliaisGerenciadas(filiais);
-        
+        Filial filial = filialService.buscarPorId(idFilial);
+
+        admin.getFiliaisGerenciadas().add(filial);
+
         return administradorRepository.save(admin);
     }
-    
-    /**
-     * Remove uma Filial da lista de filiais gerenciadas por um Administrador.
-     * @param idAdmin ID do administrador.
-     * @param idFilial ID da filial a ser removida.
-     * @return O Administrador atualizado.
-     */
+
+    @Transactional
     public Administrador removerFilialGerenciada(String idAdmin, String idFilial) {
         Administrador admin = buscarPorId(idAdmin);
-        
-        boolean removed = admin.getFiliaisGerenciadas()
-                                .removeIf(f -> f.getIdFilial().equals(idFilial));
-                                
-        if (!removed) {
-            throw new ValidacaoException("O administrador não gerencia a filial com ID " + idFilial);
-        }
-        
+        Filial filial = filialService.buscarPorId(idFilial);
+
+        admin.getFiliaisGerenciadas().remove(filial);
+
         return administradorRepository.save(admin);
     }
 }

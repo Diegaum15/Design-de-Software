@@ -1,13 +1,14 @@
 package com.seucantinho.service;
 
-import com.seucantinho.model.Espaco;
-import com.seucantinho.model.Reserva;
+import com.seucantinho.dto.EspacoDTO;
+import com.seucantinho.model.*; // Importe todas as entidades, incluindo Salao, Chacara, QuadraEsportiva, Reserva
 import com.seucantinho.repository.EspacoRepository;
 import com.seucantinho.repository.ReservaRepository;
 import com.seucantinho.exception.ValidacaoException;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -18,129 +19,208 @@ public class EspacoService {
 
     private final EspacoRepository espacoRepository;
     private final ReservaRepository reservaRepository;
+    private final FilialService filialService; // Assumindo a existência de um FilialService
 
     @Autowired
-    public EspacoService(EspacoRepository espacoRepository, ReservaRepository reservaRepository) {
+    public EspacoService(EspacoRepository espacoRepository, ReservaRepository reservaRepository, FilialService filialService) {
         this.espacoRepository = espacoRepository;
         this.reservaRepository = reservaRepository;
+        // Mock de FilialService: Na implementação real, você injetaria o serviço de Filial
+        this.filialService = filialService; 
+    }
+    
+    // ------------------------------------------------------------------------
+    // CONVERSÃO DTO <-> ENTITY (MÉTODO AUXILIAR)
+    // ------------------------------------------------------------------------
+    
+    // Converte a ENTITY (Salao, Chacara, etc.) para o DTO genérico
+    public EspacoDTO toDTO(Espaco espaco) {
+        EspacoDTO dto = new EspacoDTO();
+        
+        // Campos Comuns
+        dto.setIdEspaco(espaco.getIdEspaco());
+        dto.setNome(espaco.getNome());
+        dto.setTipo(espaco.getTipo());
+        dto.setCapacidade(espaco.getCapacidade());
+        dto.setPreco(espaco.getPreco());
+        dto.setFoto(espaco.getFoto());
+        // Relacionamento N:1 com Filial
+        if (espaco.getFilial() != null) {
+            dto.setIdFilial(espaco.getFilial().getIdFilial());
+        }
+
+        // Campos Específicos (Downcasting e Mapeamento)
+        if (espaco instanceof Salao salao) {
+            dto.setTamanhoCozinha(salao.getTamanhoCozinha());
+            dto.setQuantidadeCadeiras(salao.getQuantidadeCadeiras());
+            dto.setAreaTotal(salao.getAreaTotal());
+        } else if (espaco instanceof Chacara chacara) {
+            dto.setTemPiscina(chacara.getTemPiscina());
+            dto.setNumQuartos(chacara.getNumQuartos());
+            dto.setAreaLazer(chacara.getAreaLazer());
+            dto.setEstacionamentoCapacidade(chacara.getEstacionamentoCapacidade());
+        } else if (espaco instanceof QuadraEsportiva quadra) {
+            dto.setTipoPiso(quadra.getTipoPiso());
+            dto.setTipoEsportes(quadra.getTipoEsportes());
+        }
+        
+        return dto;
     }
 
-    /**
-     * Salva um novo Espaço (ou uma subclasse: Salao, Chacara, QuadraEsportiva).
-     * @param espaco A entidade Espaco a ser salva.
-     * @return O Espaço salvo.
-     */
-    public Espaco salvarEspaco(Espaco espaco) {
+    // Converte o DTO genérico para a ENTITY específica (Salao, Chacara, etc.)
+    private Espaco convertDtoToModel(EspacoDTO dto) {
+        
+        // Validação básica do tipo
+        if (dto.getTipo() == null || dto.getTipo().trim().isEmpty()) {
+            throw new ValidacaoException("O tipo de espaço é obrigatório.");
+        }
+        
+        // Instancia a Entidade correta
+        Espaco espaco;
+        switch (dto.getTipo().toUpperCase()) {
+            case "SALAO":
+                // Utilizando SuperBuilder para garantir o mapeamento de campos herdados
+                Salao.SalaoBuilder<?, ?> salaoBuilder = Salao.builder()
+                        .tamanhoCozinha(dto.getTamanhoCozinha())
+                        .quantidadeCadeiras(dto.getQuantidadeCadeiras() != null ? dto.getQuantidadeCadeiras() : 0)
+                        .areaTotal(dto.getAreaTotal() != null ? dto.getAreaTotal() : 0.0f);
+                espaco = salaoBuilder.build();
+                break;
+            case "CHACARA":
+                Chacara.ChacaraBuilder<?, ?> chacaraBuilder = Chacara.builder()
+                        .temPiscina(dto.getTemPiscina() != null ? dto.getTemPiscina() : false)
+                        .numQuartos(dto.getNumQuartos() != null ? dto.getNumQuartos() : 0)
+                        .areaLazer(dto.getAreaLazer())
+                        .estacionamentoCapacidade(dto.getEstacionamentoCapacidade() != null ? dto.getEstacionamentoCapacidade() : 0);
+                espaco = chacaraBuilder.build();
+                break;
+            case "QUADRAESPORTIVA":
+                QuadraEsportiva.QuadraEsportivaBuilder<?, ?> quadraBuilder = QuadraEsportiva.builder()
+                        .tipoPiso(dto.getTipoPiso())
+                        .tipoEsportes(dto.getTipoEsportes());
+                espaco = quadraBuilder.build();
+                break;
+            default:
+                throw new ValidacaoException("Tipo de espaço inválido: " + dto.getTipo());
+        }
+
+        // Mapeamento dos Campos Comuns
+        espaco.setIdEspaco(dto.getIdEspaco()); 
+        espaco.setNome(dto.getNome());
+        espaco.setTipo(dto.getTipo());
+        espaco.setCapacidade(dto.getCapacidade());
+        espaco.setPreco(dto.getPreco());
+        espaco.setFoto(dto.getFoto());
+
+        // Busca e Associa a Entidade Filial gerenciada
+        // A FilialService deve existir e ter um método buscarPorId
+        Filial filial = filialService.buscarPorId(dto.getIdFilial()); 
+        espaco.setFilial(filial); 
+        
+        return espaco;
+    }
+    
+    // ------------------------------------------------------------------------
+    // CRUD IMPLEMENTADO COM DTO
+    // ------------------------------------------------------------------------
+
+    @Transactional
+    public EspacoDTO salvarEspaco(EspacoDTO espacoDTO) {
+        
+        // 1. CONVERTE DTO para ENTITY
+        Espaco espaco = convertDtoToModel(espacoDTO); 
+
+        // 2. Validação de Negócio 
         if (espaco.getNome() == null || espaco.getNome().trim().isEmpty()) {
             throw new ValidacaoException("O nome do espaço não pode ser vazio.");
         }
-        // Validação futura: Garantir que a Filial associada exista.
-        return espacoRepository.save(espaco);
+        
+        // 3. Persiste a Entity
+        Espaco espacoSalvo = espacoRepository.save(espaco);
+        
+        // 4. CONVERTE ENTITY para DTO e retorna
+        return toDTO(espacoSalvo);
     }
-
-    /**
-     * Busca um Espaço pelo ID.
-     * @param idEspaco O ID do espaço.
-     * @return O Espaço encontrado.
-     * @throws EntityNotFoundException Se o espaço não for encontrado.
-     */
-    public Espaco buscarPorId(String idEspaco) {
+    
+    // BUSCA POR ID
+    public EspacoDTO buscarPorId(String idEspaco) {
+        Espaco espaco = buscarEntityPorId(idEspaco);
+        return toDTO(espaco);
+    }
+    
+    // MÉTODO AUXILIAR INTERNO para buscar a Entidade real
+    public Espaco buscarEntityPorId(String idEspaco) {
         return espacoRepository.findById(idEspaco)
                 .orElseThrow(() -> new EntityNotFoundException("Espaço com ID " + idEspaco + " não encontrado."));
     }
-
-    /**
-     * Lista todos os Espaços cadastrados.
-     * @return Uma lista de Espaços.
-     */
-    public List<Espaco> listarTodos() {
-        return espacoRepository.findAll();
+    
+    // LISTAR TODOS
+    public List<EspacoDTO> listarTodos() {
+        return espacoRepository.findAll().stream()
+                .map(this::toDTO)
+                .collect(Collectors.toList());
     }
 
-
-    public Espaco atualizarEspaco(String id, Espaco dados) {
-
-        Espaco atual = buscarPorId(id);
-
-        // Atualizar campos comuns
-        atual.setNome(dados.getNome());
-        atual.setTipo(dados.getTipo());
-        atual.setCapacidade(dados.getCapacidade());
-        atual.setPreco(dados.getPreco());
-        atual.setFoto(dados.getFoto());
-        atual.setFilial(dados.getFilial());
-
-        // Atualizar campos específicos (subclasse)
-        if (atual instanceof Salao s && dados instanceof Salao d) {
-            s.setTamanhoCozinha(d.getTamanhoCozinha());
-            s.setQuantidadeCadeiras(d.getQuantidadeCadeiras());
-            s.setAreaTotal(d.getAreaTotal());
-        }
-
-        if (atual instanceof Chacara c && dados instanceof Chacara d) {
-            c.setTemPiscina(d.getTemPiscina());
-            c.setNumQuartos(d.getNumQuartos());
-            c.setAreaLazer(d.getAreaLazer());
-            c.setEstacionamentoCapacidade(d.getEstacionamentoCapacidade());
-        }
-
-        if (atual instanceof QuadraEsportiva q && dados instanceof QuadraEsportiva d) {
-            q.setTipoPiso(d.getTipoPiso());
-            q.setTipoEsportes(d.getTipoEsportes());
-        }
-
-        return espacoRepository.save(atual);
-    }
-
-    public void deletarEspaco(String idEspaco) {
-
-        List<Reserva> futuras = reservaRepository.findReservasFuturasByEspacoId(idEspaco);
-
-        if (!futuras.isEmpty()) {
-            throw new ValidacaoException("Não é possível remover: existem reservas futuras para este espaço.");
-        }
-
-        espacoRepository.deleteById(idEspaco);
-    }
-
-    /**
-     * Verifica se um determinado espaço está disponível para um intervalo de tempo.
-     * Esta é a lógica base que será usada antes de criar uma Reserva.
-     * @param idEspaco ID do Espaço a verificar.
-     * @param dataInicio Início do evento.
-     * @param dataFim Fim do evento.
-     * @return true se estiver disponível, false caso contrário.
-     */
-    public boolean verificarDisponibilidade(String idEspaco, LocalDateTime dataInicio, LocalDateTime dataFim) {
-        Espaco espaco = buscarPorId(idEspaco);
+    // LISTAR DISPONÍVEIS
+    public List<EspacoDTO> listarDisponiveis(LocalDateTime dataInicio, LocalDateTime dataFim, String tipo) {
         
-        // Usa o método de consulta customizado no ReservaRepository
-        List<Reserva> conflitos = reservaRepository.findReservasConflitantes(espaco, dataInicio, dataFim);
-        
-        // Se a lista de conflitos estiver vazia, o espaço está disponível.
-        return conflitos.isEmpty();
-    }
-
-    /**
-     * Lista todos os espaços disponíveis para um determinado intervalo de tempo e, opcionalmente, tipo.
-     * @param dataInicio Início do evento.
-     * @param dataFim Fim do evento.
-     * @param tipo (Opcional) Tipo de espaço a filtrar (Salao, Chacara, etc.).
-     * @return Lista de Espaços disponíveis.
-     */
-    public List<Espaco> listarDisponiveis(LocalDateTime dataInicio, LocalDateTime dataFim, String tipo) {
+        // 1. Busca todos os espaços no repositório
         List<Espaco> todosEspacos = espacoRepository.findAll();
 
-        // 1. Filtrar por Tipo, se especificado
+        // 2. Filtra por tipo, se fornecido
         if (tipo != null && !tipo.trim().isEmpty()) {
             todosEspacos = todosEspacos.stream()
                 .filter(e -> e.getTipo().equalsIgnoreCase(tipo))
                 .collect(Collectors.toList());
         }
         
-        // 2. Filtrar por Disponibilidade
+        // 3. Filtra por Disponibilidade e converte para DTO
         return todosEspacos.stream()
-                .filter(espaco -> verificarDisponibilidade(espaco.getIdEspaco(), dataInicio, dataFim))
+                // A chave é a chamada ao método de verificação de sobreposição
+                .filter(espaco -> verificarDisponibilidade(espaco.getIdEspaco(), dataInicio, dataFim)) 
+                .map(this::toDTO) 
                 .collect(Collectors.toList());
+    }
+
+    // DELETAR 
+    @Transactional
+    public void deletarEspaco(String idEspaco) {
+        Espaco espaco = buscarEntityPorId(idEspaco);
+        
+        // REGRA DE NEGÓCIO: Não pode deletar um espaço com reservas CONFIRMADAS
+        List<Reserva> reservasAtivas = reservaRepository.findSobreposicaoDeReserva(idEspaco, LocalDateTime.MIN, LocalDateTime.MAX);
+        
+        // O método findSobreposicaoDeReserva foi projetado para datas, mas pode ser 
+        // reutilizado para verificar qualquer reserva confirmada se usarmos MIN/MAX.
+        // Se houver reservas ativas, o sistema deve impedir a exclusão.
+        if (!reservasAtivas.isEmpty()) {
+             throw new ValidacaoException("Não é possível excluir o espaço, pois ele possui reservas ativas ou futuras confirmadas.");
+        }
+        
+        espacoRepository.delete(espaco);
+    }
+    
+    /**
+     * Lógica crítica: Verifica se não há sobreposição de reservas CONFIRMADAS.
+     * @param idEspaco ID do espaço.
+     * @param dataInicio Início da janela de checagem.
+     * @param dataFim Fim da janela de checagem.
+     * @return true se o espaço estiver disponível, false caso haja sobreposição.
+     */
+    public boolean verificarDisponibilidade(String idEspaco, LocalDateTime dataInicio, LocalDateTime dataFim) {
+        
+        // Validação básica de datas
+        if (dataInicio == null || dataFim == null || dataInicio.isAfter(dataFim) || dataInicio.isEqual(dataFim)) {
+            // Em um sistema real, essa validação deveria ocorrer antes da chamada.
+            throw new ValidacaoException("Período de reserva inválido.");
+        }
+        
+        // O ReservaRepository faz o trabalho pesado consultando no banco.
+        List<Reserva> reservasConflitantes = reservaRepository.findSobreposicaoDeReserva(
+            idEspaco, dataInicio, dataFim
+        );
+        
+        // Retorna true se a lista de conflitos estiver vazia, ou seja, está disponível.
+        return reservasConflitantes.isEmpty(); 
     }
 }
