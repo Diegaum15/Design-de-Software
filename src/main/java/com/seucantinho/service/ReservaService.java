@@ -95,6 +95,58 @@ public class ReservaService {
         
         throw new ValidacaoException("A reserva não pode ser atualizada para o status: " + novoStatus + " a partir do status: " + reserva.getStatusReserva());
     }
+
+        // -------------------------------------------------------
+    // ATUALIZAR RESERVA (PUT)
+    // -------------------------------------------------------
+    public Reserva atualizarReserva(String idReserva, Reserva novaReserva) {
+        Reserva reservaExistente = buscarPorId(idReserva);
+
+        // Atualiza Cliente
+        if (novaReserva.getCliente() != null) {
+            reservaExistente.setCliente(
+                clienteService.buscarEntityPorId(novaReserva.getCliente().getIdUsuario())
+            );
+        }
+
+        // Atualiza Espaço
+        if (novaReserva.getEspaco() != null) {
+            reservaExistente.setEspaco(
+                espacoService.buscarEntityPorId(novaReserva.getEspaco().getIdEspaco())
+            );
+        }
+
+        // Atualiza datas
+        if (novaReserva.getDataEvento() != null) {
+            reservaExistente.setDataEvento(novaReserva.getDataEvento());
+        }
+        if (novaReserva.getDataEventoFim() != null) {
+            reservaExistente.setDataEventoFim(novaReserva.getDataEventoFim());
+        }
+
+        // Atualiza valor
+        reservaExistente.setValorPago(novaReserva.getValorPago());
+
+        // Atualiza status
+        if (novaReserva.getStatusReserva() != null) {
+            reservaExistente.setStatusReserva(novaReserva.getStatusReserva());
+        }
+
+        // Salva tudo
+        return reservaRepository.save(reservaExistente);
+    }
+
+
+
+// -------------------------------------------------------
+// DELETAR RESERVA (DELETE)
+// -------------------------------------------------------
+public void deletarReserva(String idReserva) {
+    Reserva reserva = buscarPorId(idReserva);
+
+    reservaRepository.delete(reserva);
+}
+
     
     /**
      * Busca uma Reserva pelo ID.

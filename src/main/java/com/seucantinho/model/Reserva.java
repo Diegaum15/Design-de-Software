@@ -39,19 +39,12 @@ public class Reserva {
     @Column(name = "valor_pago")
     private float valorPago;
     
+    // Status da reserva (ex: PENDENTE, CONFIRMADA, CANCELADA, QUITADA)
     @Column(name = "status_reserva")
-    private String statusReserva; // Ex: PENDENTE, CONFIRMADA, CANCELADA
+    private String statusReserva; 
 
     // Relacionamento 1:1 com Pagamento (Uma Reserva tem um Pagamento)
+    // O CascadeType.ALL garante que o Pagamento seja salvo junto com a Reserva
     @OneToOne(mappedBy = "reserva", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private Pagamento pagamento;
-
-     // Enum StatusReserva
-    // package com.seucantinho.model;
-
-    enum StatusReserva {
-        PENDENTE,
-        CONFIRMADA,
-        CANCELADA 
-    }
 }

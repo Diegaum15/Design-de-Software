@@ -93,4 +93,44 @@ public class ReservaController {
         List<ReservaResponse> reservas = reservaService.listarTodas();
         return ResponseEntity.ok(reservas);
     }
+
+    @Operation(summary = "Atualiza uma Reserva",
+           description = "Permite alterar data, espaço, cliente ou valor.")
+    @PutMapping("/{id}")
+    public ResponseEntity<ReservaResponse> atualizarReserva(
+            @PathVariable String id,
+            @Valid @RequestBody ReservaRequest request) {
+
+        Reserva reservaAtualizada = new Reserva();
+
+        // Cliente
+        Cliente cliente = new Cliente();
+        cliente.setIdUsuario(request.getIdCliente());
+        reservaAtualizada.setCliente(cliente);
+
+        // Espaço
+        Espaco espaco = new Espaco() {};
+        espaco.setIdEspaco(request.getIdEspaco());
+        reservaAtualizada.setEspaco(espaco);
+
+        // Datas
+        reservaAtualizada.setDataEvento(request.getDataEventoInicio());
+        reservaAtualizada.setDataEventoFim(request.getDataEventoFim());
+
+        // Valor
+        reservaAtualizada.setValorPago(request.getValorTotal());
+
+        Reserva reservaSalva = reservaService.atualizarReserva(id, reservaAtualizada);
+
+        return ResponseEntity.ok(reservaService.toResponse(reservaSalva));
+    }
+
+    @Operation(summary = "Deleta uma Reserva pelo ID",
+           description = "Remove uma reserva permanentemente.")
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deletarReserva(@PathVariable String id) {
+        reservaService.deletarReserva(id);
+        return ResponseEntity.noContent().build();
+    }
+
 }

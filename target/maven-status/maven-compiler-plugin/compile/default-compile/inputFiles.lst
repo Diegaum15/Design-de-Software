@@ -3,7 +3,6 @@
 /home/diego/DesignSoft/seucantinho/backend/src/main/java/com/seucantinho/repository/PagamentoRepository.java
 /home/diego/DesignSoft/seucantinho/backend/src/main/java/com/seucantinho/service/EspacoService.java
 /home/diego/DesignSoft/seucantinho/backend/src/main/java/com/seucantinho/dto/EspacoDTO.java
-/home/diego/DesignSoft/seucantinho/backend/src/main/java/com/seucantinho/config/SwaggerConfig.java
 /home/diego/DesignSoft/seucantinho/backend/src/main/java/com/seucantinho/model/Espaco.java
 /home/diego/DesignSoft/seucantinho/backend/src/main/java/com/seucantinho/service/AdministradorService.java
 /home/diego/DesignSoft/seucantinho/backend/src/main/java/com/seucantinho/exception/UsuarioNaoEncontradoException.java
@@ -32,10 +31,12 @@
 /home/diego/DesignSoft/seucantinho/backend/src/main/java/com/seucantinho/repository/AdministradorRepository.java
 /home/diego/DesignSoft/seucantinho/backend/src/main/java/com/seucantinho/exception/ValidacaoException.java
 /home/diego/DesignSoft/seucantinho/backend/src/main/java/com/seucantinho/controller/FilialController.java
+/home/diego/DesignSoft/seucantinho/backend/src/main/java/com/seucantinho/dto/AtualizarStatusPagamentoRequest.java
 /home/diego/DesignSoft/seucantinho/backend/src/main/java/com/seucantinho/dto/UsuarioLoginDTO.java
 /home/diego/DesignSoft/seucantinho/backend/src/main/java/com/seucantinho/model/Pagamento.java
 /home/diego/DesignSoft/seucantinho/backend/src/main/java/com/seucantinho/controller/EspacoController.java
 /home/diego/DesignSoft/seucantinho/backend/src/main/java/com/seucantinho/model/QuadraEsportiva.java
+/home/diego/DesignSoft/seucantinho/backend/src/main/java/com/seucantinho/config/OpenApiConfig.java
 /home/diego/DesignSoft/seucantinho/backend/src/main/java/com/seucantinho/service/UsuarioService.java
 /home/diego/DesignSoft/seucantinho/backend/src/main/java/com/seucantinho/model/Usuario.java
 /home/diego/DesignSoft/seucantinho/backend/src/main/java/com/seucantinho/dto/ClienteDTO.java

@@ -1,3 +1,4 @@
+com/seucantinho/dto/AtualizarStatusPagamentoRequest.class
 com/seucantinho/repository/PagamentoRepository.class
 com/seucantinho/model/Administrador$AdministradorBuilderImpl.class
 com/seucantinho/dto/ClienteDTO.class
@@ -20,11 +21,11 @@ com/seucantinho/model/Cliente$ClienteBuilder.class
 com/seucantinho/exception/GlobalExceptionHandler.class
 com/seucantinho/dto/ReservaRequest.class
 com/seucantinho/model/Pagamento.class
+com/seucantinho/controller/ReservaController$2.class
 com/seucantinho/controller/AdministradorController.class
 com/seucantinho/controller/EspacoController.class
 com/seucantinho/exception/ReservaIndisponivelException.class
 com/seucantinho/model/Espaco.class
-com/seucantinho/model/Reserva$StatusReserva.class
 com/seucantinho/model/Salao.class
 com/seucantinho/model/Administrador$AdministradorBuilder.class
 com/seucantinho/model/Salao$SalaoBuilder.class
@@ -40,8 +41,8 @@ com/seucantinho/model/Chacara$ChacaraBuilderImpl.class
 com/seucantinho/dto/PagamentoRequest.class
 com/seucantinho/service/EspacoService.class
 com/seucantinho/controller/HealthCheckController.class
+com/seucantinho/config/OpenApiConfig.class
 com/seucantinho/repository/FilialRepository.class
-com/seucantinho/config/SwaggerConfig.class
 com/seucantinho/model/QuadraEsportiva.class
 com/seucantinho/controller/PagamentoController.class
 com/seucantinho/service/FilialService.class

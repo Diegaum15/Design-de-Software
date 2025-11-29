@@ -12,21 +12,31 @@ import java.util.List;
 @Repository
 public interface ReservaRepository extends JpaRepository<Reserva, String> {
 
-    // 🔥 Método que o Service está chamando
+    // Busca reservas por cliente
     List<Reserva> findByClienteIdUsuario(String idUsuario);
 
     /**
-     * Verifica se existe alguma reserva CONFIRMADA que se sobreponha
-     * ao intervalo solicitado.
+     * Verifica se existe alguma reserva CONFIRMADA que se sobreponha ao período solicitado.
+     * A lógica de sobreposição é:
+     *
+     *   (início solicitado < fim da reserva existente)
+     *   AND
+     *   (fim solicitado > início da reserva existente)
+     *
      */
-    @Query("SELECT r FROM Reserva r " +
-           "WHERE r.espaco.idEspaco = :idEspaco " +
-           "AND r.status = 'CONFIRMADA' " +
-           "AND (" +
-           "   (:dataInicio < r.dataFim AND :dataFim > r.dataInicio)" +
-           ")")
+    @Query("""
+        SELECT r
+        FROM Reserva r
+        WHERE r.espaco.idEspaco = :idEspaco
+          AND r.statusReserva = 'CONFIRMADA'
+          AND (
+                :dataInicio < r.dataEventoFim
+            AND :dataFim > r.dataEvento
+          )
+    """)
     List<Reserva> findSobreposicaoDeReserva(
             @Param("idEspaco") String idEspaco,
             @Param("dataInicio") LocalDateTime dataInicio,
-            @Param("dataFim") LocalDateTime dataFim);
+            @Param("dataFim") LocalDateTime dataFim
+    );
 }

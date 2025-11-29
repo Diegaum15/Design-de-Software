@@ -2,7 +2,6 @@ package com.seucantinho.controller;
 
 import com.seucantinho.dto.EspacoDTO;
 import com.seucantinho.service.EspacoService;
-// Remova os imports desnecessários de Entidades (Espaco, Salao, etc.) e ValidacaoException
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -31,23 +30,43 @@ public class EspacoController {
     // CRUD BÁSICO (Administrativo)
     // ------------------------------------------------------------------------
 
-    @Operation(summary = "Cria ou atualiza um espaço",
-               description = "Registra um novo espaço (Salão, Chácara ou Quadra Esportiva) ou atualiza um existente. Usa o EspacoDTO.")
+    @Operation(summary = "Cria um novo espaço",
+               description = "Registra um novo espaço (Salão, Chácara ou Quadra Esportiva).")
     @PostMapping
-    // Altera a assinatura para receber e retornar EspacoDTO
-    public ResponseEntity<EspacoDTO> salvarEspaco(@Valid @RequestBody EspacoDTO espacoDTO) {
+    public ResponseEntity<EspacoDTO> criarEspaco(@Valid @RequestBody EspacoDTO espacoDTO) {
+
+        // Garante que o ID é nulo para forçar a criação (embora o service já trate)
+        espacoDTO.setIdEspaco(null);
         
         // O Service cuida da conversão, validação e persistência
         EspacoDTO novoEspaco = espacoService.salvarEspaco(espacoDTO);
         
-        // Retorna 201 Created se o ID estava nulo, ou 200 OK se o ID já existia (atualização)
-        HttpStatus status = (espacoDTO.getIdEspaco() == null) ? HttpStatus.CREATED : HttpStatus.OK;
-        return new ResponseEntity<>(novoEspaco, status);
+        // Retorna 201 Created
+        return new ResponseEntity<>(novoEspaco, HttpStatus.CREATED);
     }
     
+    @Operation(summary = "Atualiza um espaço existente",
+               description = "Atualiza completamente os dados de um espaço específico. O ID no path deve corresponder ao ID no corpo.")
+    @PutMapping("/{id}")
+    public ResponseEntity<EspacoDTO> atualizarEspaco(
+            @PathVariable String id, 
+            @Valid @RequestBody EspacoDTO espacoDTO) {
+
+        // Regra de segurança/coerência: o ID do path deve ser usado para a atualização
+        if (espacoDTO.getIdEspaco() == null || !id.equals(espacoDTO.getIdEspaco())) {
+            // Se o ID no corpo estiver faltando ou for diferente do path
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build(); 
+        }
+        
+        // O Service cuida da conversão, validação e persistência
+        EspacoDTO espacoAtualizado = espacoService.salvarEspaco(espacoDTO);
+        
+        // Retorna 200 OK
+        return ResponseEntity.ok(espacoAtualizado);
+    }
+
     @Operation(summary = "Busca um espaço pelo ID")
     @GetMapping("/{id}")
-    // Altera a assinatura para retornar EspacoDTO
     public ResponseEntity<EspacoDTO> buscarPorId(@PathVariable String id) {
         EspacoDTO espaco = espacoService.buscarPorId(id);
         return ResponseEntity.ok(espaco);
@@ -67,7 +86,6 @@ public class EspacoController {
     
     @Operation(summary = "Lista todos os espaços ou filtra por tipo e disponibilidade")
     @GetMapping
-    // Altera a assinatura para retornar List<EspacoDTO>
     public ResponseEntity<List<EspacoDTO>> listarEspacos(
             @Parameter(description = "Data e hora de início da reserva (formato ISO: YYYY-MM-DDTHH:MM:SS)")
             @RequestParam(required = false) LocalDateTime dataInicio,
@@ -90,6 +108,4 @@ public class EspacoController {
         
         return ResponseEntity.ok(resultados);
     }
-
-    // REMOVA O MÉTODO convertDtoToModel AQUI, POIS ELE FOI MOVIDO PARA O SERVICE
 }

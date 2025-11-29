@@ -135,4 +135,22 @@ public class PagamentoService {
         return pagamentoRepository.findById(idPagamento)
                 .orElseThrow(() -> new EntityNotFoundException("Pagamento com ID " + idPagamento + " não encontrado."));
     }
+
+    @Transactional
+    public Pagamento atualizarStatus(String idPagamento, String novoStatus) {
+        Pagamento pagamento = buscarPorId(idPagamento);
+
+        pagamento.setStatus(novoStatus);
+        return pagamentoRepository.save(pagamento);
+    }
+
+    @Transactional
+    public void cancelarPagamento(String idPagamento) {
+        Pagamento pagamento = buscarPorId(idPagamento);
+
+        // Em vez de deletar, registramos que foi cancelado
+        pagamento.setStatus("CANCELADO");
+        pagamentoRepository.save(pagamento);
+    }
+
 }

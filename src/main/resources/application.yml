@@ -1,6 +1,6 @@
 spring:
   datasource:
-    url: jdbc:postgresql://seucantinho-db:5432/seucantinho
+    url: jdbc:postgresql://localhost:5432/seucantinho
     username: seucantinho_user
     password: cantinho_secreto
     driver-class-name: org.postgresql.Driver
