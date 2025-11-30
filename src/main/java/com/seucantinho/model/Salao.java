@@ -22,7 +22,7 @@ public class Salao extends Espaco {
 
     // Campos específicos para Salão de Festas
     @Column(nullable = true)
-    private String tamanhoCozinha; // Ex: "Pequena", "Média", "Grande"
+    private String tamanhoCozinha;
 
     @Column(nullable = true)
     private Integer quantidadeCadeiras;

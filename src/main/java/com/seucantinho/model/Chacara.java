@@ -28,7 +28,7 @@ public class Chacara extends Espaco {
     private Integer numQuartos;
     
     @Column(nullable = true)
-    private String areaLazer; // Ex: "Churrasqueira, playground, jardim"
+    private String areaLazer; 
 
     @Column(nullable = true)
     private Integer estacionamentoCapacidade;

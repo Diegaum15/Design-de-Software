@@ -20,7 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class UsuarioController {
 
     private final UsuarioService usuarioService;
-    // Futuro: Injeção do AuthenticationManager e JWTService
+    // Futuro: Injeção do AuthenticationManager e JWTService (nao consegui implementar)
 
     @Autowired
     public UsuarioController(UsuarioService usuarioService) {
@@ -36,17 +36,7 @@ public class UsuarioController {
         Usuario usuario = usuarioService.buscarPorEmail(loginDTO.getEmail());
         
         // 2. Validação da Senha (Simulação)
-        // Em um sistema real, você usaria o PasswordEncoder.matches()
-        
-        /* // Lógica real com Spring Security:
-        if (passwordEncoder.matches(loginDTO.getSenha(), usuario.getSenha())) {
-            // Se a senha for válida:
-            // Gerar Token JWT e retornar o Token
-            return ResponseEntity.ok(jwtService.generateToken(usuario));
-        } else {
-            throw new ValidacaoException("Credenciais inválidas.");
-        }
-        */
+        // Nao consegui :(
 
         // Simulação sem Spring Security:
         if (usuario.getSenha() != null && usuario.getSenha().equals(loginDTO.getSenha())) {

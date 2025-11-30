@@ -53,8 +53,6 @@ public class ReservaController {
         // Define as datas e o valor
         novaReserva.setDataEvento(request.getDataEventoInicio()); 
         
-        // Se a lógica de verificação de conflito no Service depender da dataEventoFim, 
-        // você precisará ajustar o Reserva.java ou o service. Aqui, continuamos com o Valor
         novaReserva.setValorPago(request.getValorTotal()); // Valor total da reserva
 
         // 2. Chama o Service para validação de disponibilidade e salvamento
@@ -80,7 +78,6 @@ public class ReservaController {
             description = "Retorna uma lista de reservas feitas por um cliente específico.")
     @GetMapping("/cliente/{idCliente}")
     public ResponseEntity<List<ReservaResponse>> listarReservasPorCliente(@PathVariable String idCliente) {
-        // Mude o tipo de retorno para usar o DTO
         List<ReservaResponse> reservas = reservaService.listarReservasPorCliente(idCliente); 
         return ResponseEntity.ok(reservas);
     }
@@ -89,7 +86,6 @@ public class ReservaController {
             description = "Retorna todas as reservas, ideal para painel administrativo.")
     @GetMapping
     public ResponseEntity<List<ReservaResponse>> listarTodas() {
-        // Implementação
         List<ReservaResponse> reservas = reservaService.listarTodas();
         return ResponseEntity.ok(reservas);
     }

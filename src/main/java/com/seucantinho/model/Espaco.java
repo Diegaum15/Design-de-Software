@@ -11,15 +11,12 @@ import lombok.experimental.SuperBuilder;
 @Entity
 @Table(name = "TB_ESPACO")
 @Inheritance(strategy = InheritanceType.JOINED)
-@Data // Mantido para Getters/Setters
-@NoArgsConstructor // Construtor sem argumentos
-@AllArgsConstructor // Construtor com todos os argumentos
-@SuperBuilder // Adicionado para suportar herança de construtores
+@Data 
+@NoArgsConstructor 
+@AllArgsConstructor 
+@SuperBuilder 
 
-// ------------------------------------------------------------------------
-// CONFIGURAÇÃO JACKSON PARA HERANÇA (CORRIGE O ERRO 500)
 // Permite que o Jackson saiba qual subclasse deve ser instanciada.
-// Ele procurará pelo campo "tipo" no JSON.
 @JsonTypeInfo(
         use = JsonTypeInfo.Id.NAME, // Usa o nome da classe ou um alias
         include = JsonTypeInfo.As.PROPERTY, // O discriminador estará em um campo
@@ -30,7 +27,7 @@ import lombok.experimental.SuperBuilder;
         @JsonSubTypes.Type(value = Chacara.class, name = "CHACARA"),
         @JsonSubTypes.Type(value = QuadraEsportiva.class, name = "QUADRAESPORTIVA")
 })
-// ------------------------------------------------------------------------
+
 public abstract class Espaco {
     
     @Id
@@ -41,7 +38,6 @@ public abstract class Espaco {
     private String nome;
     
     // Este campo não é persistido, mas é usado como discriminador pelo Jackson
-    // para indicar o tipo durante a desserialização do JSON.
     @Transient 
     private String tipo; 
     

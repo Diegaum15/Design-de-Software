@@ -1,76 +1,62 @@
-Seu Cantinho - Sistema de Aluguel de Espaços (Backend)
+Passo 1 - Gerar o JAR da Aplicação 
 
-Este repositório contém o backend do projeto "Seu Cantinho", uma API RESTful desenvolvida em Spring Boot para gerenciar o aluguel de salões de festas, chácaras e quadras esportivas.
-
-🚀 Requisitos de Execução
-
-Para rodar o sistema, você precisará ter instalado:
-
-Java 17 (para compilar localmente, opcional se usar apenas Docker).
-
-Maven (opcional, mas necessário para gerar o JAR).
-
-Docker e Docker Compose (versão 28.4.0+ é recomendada).
-
-🛠️ Como Executar com Docker Compose
-
-A aplicação é configurada para ser executada com um único comando Docker Compose.
-
-Passo 1: Gerar o JAR da Aplicação
-
-Antes de construir a imagem Docker, você precisa compilar o código e gerar o arquivo JAR (o "artefato" de execução do Java).
-
-# Navegue até o diretório raiz do backend
+# Acesse o backend ( se não tiver basta criar com mkdir )
 cd seu-cantinho/backend
 
-# Limpa e empacota o projeto, gerando o JAR em 'target/'
+# Limpa, compila e gera o JAR em target/
 mvn clean package -DskipTests
 
+Isso cria:
+target/seu-cantinho-1.0.0.jar
+que será usado na imagem Docker.
 
-Passo 2: Iniciar o Sistema (API + PostgreSQL)
+Passo 2 — Subir o Sistema (API + PostgreSQL)
 
-Com o JAR gerado, use o docker-compose.yml para iniciar todos os serviços.
-
-# No mesmo diretório (seu-cantinho/backend)
+Ainda no diretório backend/:
 docker compose up --build
 
+O Docker irá:
 
-O Docker Compose fará o seguinte:
+Criar o container db (PostgreSQL)
+Criar o container app (Spring Boot)
+Esperar o banco ficar saudável
+Iniciar a API conectada ao banco
 
-Constrói a imagem Docker da API (app) usando o Dockerfile.
+A aplicação ficará disponível em:
 
-Baixa a imagem do PostgreSQL (db).
+http://localhost:8080
 
-Garante que o banco de dados esteja saudável.
+Passo 3 — Testar a API
 
-Inicia a API do Spring Boot, conectando-a ao serviço db.
-
-Passo 3: Testar a API
-
-Após a inicialização (que pode levar alguns segundos), a API estará acessível em http://localhost:8080.
-
-Você pode testar o status da API usando o curl:
-
+Testar se a API está funcionando 
 curl http://localhost:8080/api/status
 
+Resposta esperada Ex:
+{"servicos":"API REST em execução.","status":"UP"} seu_usuario@seu_usuario-computador:~/DesignSoft/seucantinho/backend$ 
 
-A resposta esperada é:
+Estrutura do Repositório
+Seu repositório está organizado de acordo com as exigências:
 
-{"servicos":"PostgreSQL e API funcionando corretamente.","status":"UP"}
+/seucantinho -> dentro dele apenas o diretório /backend e o arquivo docker-compose.yml 
+/src               → código-fonte da API
+/uml               → diagramas UML (fonte + imagens)
+/backend
+  ├── Dockerfile   → imagem da API
+README.md          → você está aqui
+
+Tecnologias Utilizadas
+
+Java 17
+Spring Boot 3
+Spring Data JPA
+Hibernate
+PostgreSQL
+Docker / Docker Compose
+OpenAPI (Swagger UI)
+Acessar pelo link: http://localhost:8080/swagger-ui/index.html 
 
 
-🗺️ Estrutura do Projeto
 
-O repositório está organizado conforme as instruções de desenvolvimento:
 
-/src: Contém o código-fonte da aplicação (Java/Spring Boot).
 
-/uml: (A ser criado) Diagramas UML do sistema.
 
-Dockerfile: Para empacotar a aplicação Spring Boot.
-
-docker-compose.yml: Para orquestrar o backend e o banco de dados.
-
-README.md: Este arquivo.
-
-documentacao.pdf: (A ser criado) Relatório arquitetural e decisões de design.

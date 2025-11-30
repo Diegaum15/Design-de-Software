@@ -11,7 +11,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api")
-@Hidden // Oculta este endpoint no Swagger (pois é apenas para checagem interna/saúde)
+@Hidden
 public class HealthCheckController {
 
     /**
@@ -26,13 +26,6 @@ public class HealthCheckController {
         response.put("servicos", "API REST em execução.");
         response.put("status", "UP");
         
-        // Em um sistema real, você faria:
-        // try {
-        //     dbService.checkConnection();
-        //     response.put("db", "CONNECTED");
-        // } catch (Exception e) {
-        //     response.put("db", "DOWN");
-        // }
         
         return ResponseEntity.ok(response);
     }

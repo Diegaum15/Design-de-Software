@@ -6,5 +6,5 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface PagamentoRepository extends JpaRepository<Pagamento, String> {
-    // Métodos específicos de consulta, se necessários
+    // Espaco para métodos de consulta personalizados, se necessário
 }

@@ -25,9 +25,6 @@ public class Filial {
     private String telefone;
     
     private boolean status;
-
-    // Um administrador pode gerenciar muitas filiais (se o mapeamento for ManyToMany)
-    // Se for um ManyToOne, a lista não existe aqui. Vamos focar no OneToMany:
     
     // Relacionamento 1:N com Espacos (Uma Filial tem muitos Espaços)
     @OneToMany(mappedBy = "filial", cascade = CascadeType.ALL, orphanRemoval = true)

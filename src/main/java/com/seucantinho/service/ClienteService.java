@@ -7,7 +7,7 @@ import com.seucantinho.model.Usuario;
 import com.seucantinho.exception.ValidacaoException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional; // Importante para transações
+import org.springframework.transaction.annotation.Transactional; 
 
 import jakarta.persistence.EntityNotFoundException;
 import java.util.List;

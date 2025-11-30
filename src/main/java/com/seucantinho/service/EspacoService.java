@@ -1,7 +1,7 @@
 package com.seucantinho.service;
 
 import com.seucantinho.dto.EspacoDTO;
-import com.seucantinho.model.*; // Importe todas as entidades, incluindo Salao, Chacara, QuadraEsportiva, Reserva
+import com.seucantinho.model.*; // Importando todas as entidades, incluindo Salao, Chacara, QuadraEsportiva, Reserva
 import com.seucantinho.repository.EspacoRepository;
 import com.seucantinho.repository.ReservaRepository;
 import com.seucantinho.exception.ValidacaoException;
@@ -19,13 +19,12 @@ public class EspacoService {
 
     private final EspacoRepository espacoRepository;
     private final ReservaRepository reservaRepository;
-    private final FilialService filialService; // Assumindo a existência de um FilialService
+    private final FilialService filialService; 
 
     @Autowired
     public EspacoService(EspacoRepository espacoRepository, ReservaRepository reservaRepository, FilialService filialService) {
         this.espacoRepository = espacoRepository;
         this.reservaRepository = reservaRepository;
-        // Mock de FilialService: Na implementação real, você injetaria o serviço de Filial
         this.filialService = filialService; 
     }
     
@@ -190,8 +189,6 @@ public class EspacoService {
         // REGRA DE NEGÓCIO: Não pode deletar um espaço com reservas CONFIRMADAS
         List<Reserva> reservasAtivas = reservaRepository.findSobreposicaoDeReserva(idEspaco, LocalDateTime.MIN, LocalDateTime.MAX);
         
-        // O método findSobreposicaoDeReserva foi projetado para datas, mas pode ser 
-        // reutilizado para verificar qualquer reserva confirmada se usarmos MIN/MAX.
         // Se houver reservas ativas, o sistema deve impedir a exclusão.
         if (!reservasAtivas.isEmpty()) {
              throw new ValidacaoException("Não é possível excluir o espaço, pois ele possui reservas ativas ou futuras confirmadas.");

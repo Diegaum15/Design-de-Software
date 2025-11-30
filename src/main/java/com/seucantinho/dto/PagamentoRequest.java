@@ -5,7 +5,7 @@ import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import org.hibernate.validator.constraints.CreditCardNumber;
 
-@Data // Gera Getters, Setters, ToString, EqualsAndHashCode
+@Data 
 public class PagamentoRequest {
 
     // ID da reserva que este pagamento se destina

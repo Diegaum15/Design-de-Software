@@ -19,17 +19,17 @@ public class AdministradorService {
 
     private final AdministradorRepository administradorRepository;
     private final UsuarioService usuarioService;
-    private final FilialService filialService;   // <-- AGORA EXISTE
+    private final FilialService filialService;  
 
     @Autowired
     public AdministradorService(
             AdministradorRepository administradorRepository,
             UsuarioService usuarioService,
-            FilialService filialService   // <-- INJETADO AQUI
+            FilialService filialService   
     ) {
         this.administradorRepository = administradorRepository;
         this.usuarioService = usuarioService;
-        this.filialService = filialService;      // <-- ATRIBUÍDO
+        this.filialService = filialService;      
     }
 
     public Administrador buscarPorMatricula(String matricula) {
@@ -44,7 +44,6 @@ public class AdministradorService {
 
     public Administrador registrarAdministrador(Administrador administrador) {
         usuarioService.verificarEmailUnico(administrador.getEmail());
-        // Validação futura: matrícula única
         return administradorRepository.save(administrador);
     }
 

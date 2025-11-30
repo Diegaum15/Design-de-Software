@@ -15,7 +15,7 @@ import org.springframework.context.annotation.Lazy;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.stream.Collectors; // <--- CORREÇÃO 1: Importação de Collectors
+import java.util.stream.Collectors; 
 
 @Service
 public class ReservaService {
@@ -163,8 +163,6 @@ public void deletarReserva(String idReserva) {
         ReservaResponse response = new ReservaResponse();
         response.setIdReserva(reserva.getIdReserva());
         response.setIdCliente(reserva.getCliente().getIdUsuario());
-        // Você precisa buscar o nome do Cliente (se o ClienteService tiver um método)
-        // response.setNomeCliente(clienteService.buscarNome(reserva.getCliente().getIdUsuario()));
         response.setIdEspaco(reserva.getEspaco().getIdEspaco());
         response.setNomeEspaco(reserva.getEspaco().getNome());
         response.setDataReserva(reserva.getDataReserva());
@@ -181,25 +179,20 @@ public void deletarReserva(String idReserva) {
         return response;
     }
 
-    // NOVO MÉTODO DE LISTAGEM GERAL
     public List<ReservaResponse> listarTodas() {
         return reservaRepository.findAll().stream()
             .map(this::toResponse)
             .collect(Collectors.toList());
     }
 
-    // AJUSTE NO MÉTODO EXISTENTE
-    // Mude a assinatura para retornar DTO
     public List<ReservaResponse> listarReservasPorCliente(String idCliente) {
         return reservaRepository.findByClienteIdUsuario(idCliente).stream()
-            .map(this::toResponse) // Use o novo método de conversão
+            .map(this::toResponse) 
             .collect(Collectors.toList());
     }
 
-    // AJUSTE NO MÉTODO EXISTENTE
-    // Mude a assinatura para retornar DTO
     public ReservaResponse buscarPorIdDTO(String idReserva) {
-        Reserva reserva = buscarPorId(idReserva); // Este método retorna a ENTITY e agora existe
+        Reserva reserva = buscarPorId(idReserva); 
         return toResponse(reserva);
     }
 }

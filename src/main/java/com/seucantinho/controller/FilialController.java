@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-@RestController // Define a classe como um Controller REST
+@RestController 
 @RequestMapping("/api/filiais") // URL base para todos os endpoints deste controller
 @Tag(name = "Filiais", description = "Gerenciamento de unidades e locais (Filiais) do Seu Cantinho.")
 public class FilialController {

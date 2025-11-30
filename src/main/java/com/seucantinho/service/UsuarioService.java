@@ -11,17 +11,18 @@ import java.util.Optional;
 
 // Importação que será necessária no futuro para segurança:
 // import org.springframework.security.crypto.password.PasswordEncoder;
+// Nao foi utilizado ainda, mas deixei comentado para referência futura 
 
 @Service
 public class UsuarioService {
 
     private final UsuarioRepository usuarioRepository;
-    // private final PasswordEncoder passwordEncoder; // Deixe comentado por enquanto
+    // private final PasswordEncoder passwordEncoder; // Deixei comentado por enquanto
 
     @Autowired
     public UsuarioService(
         UsuarioRepository usuarioRepository
-        /*, PasswordEncoder passwordEncoder // Deixe comentado por enquanto */
+        /*, PasswordEncoder passwordEncoder // Deixei comentado por enquanto */
     ) {
         this.usuarioRepository = usuarioRepository;
         // this.passwordEncoder = passwordEncoder; // Deixe comentado por enquanto

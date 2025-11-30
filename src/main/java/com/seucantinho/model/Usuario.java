@@ -27,10 +27,8 @@ public abstract class Usuario {
     
     private String telefone;
     
-    private String cpf; // Ou outro documento de identificação
+    private String cpf; 
     
-    // Tipo de usuário: CLIENTE, ADMIN, PROPRIETARIO (pode ser um Enum em produção)
     private String tipoUsuario;
     
-    // Outros campos comuns a todos os usuários...
 }

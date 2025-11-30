@@ -31,6 +31,4 @@ public class ClienteDTO {
     private String endereco;
     private Boolean status; // Status do usuário
 
-    // O Lombok gera o construtor vazio, mas se você precisar de um
-    // construtor com todos os argumentos, use @AllArgsConstructor
 }

@@ -22,8 +22,8 @@ public class QuadraEsportiva extends Espaco {
 
     // Campos específicos para Quadra Esportiva
     @Column(nullable = false)
-    private String tipoPiso; // Ex: "Cimento", "Grama Sintética", "Madeira"
+    private String tipoPiso;
 
     @Column(nullable = true)
-    private String tipoEsportes; // Ex: "Futebol, Vôlei"
+    private String tipoEsportes; 
 }
